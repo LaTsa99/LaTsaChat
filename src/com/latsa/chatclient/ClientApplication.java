@@ -1,14 +1,8 @@
 package com.latsa.chatclient;
 
 import com.latsa.chatclient.gui.LoginWindow;
-import com.latsa.chatclient.gui.MainChatWindow;
-import com.sun.tools.javac.Main;
 
 import java.awt.*;
-
-import static com.latsa.chatclient.ChatStates.Login;
-import static com.latsa.chatclient.ChatStates.MainWindow;
-import static com.latsa.chatclient.ChatStates.Exit;
 
 public class ClientApplication {
 
@@ -28,6 +22,7 @@ public class ClientApplication {
 
     public static void main(String[] args)
     {
+
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

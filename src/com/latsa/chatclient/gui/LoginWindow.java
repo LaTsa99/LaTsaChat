@@ -4,6 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+
 
 public class LoginWindow extends JFrame {
 
@@ -20,6 +27,9 @@ public class LoginWindow extends JFrame {
     private String ipAddress;
     private int portNumber;
 
+    private Socket sock;
+    private DataInputStream dis;
+    private DataOutputStream dos;
 
     public LoginWindow()
     {
@@ -30,6 +40,13 @@ public class LoginWindow extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(320, 250);
         this.setResizable(false);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                disconnect();
+            }
+        });
     }
 
     private void initWindow()
@@ -90,6 +107,7 @@ public class LoginWindow extends JFrame {
         JLabel ipLabel = new JLabel("Username:");
         UsernameField = new JTextField(20);
         UsernameField.addActionListener(loginListener);
+        UsernameField.requestFocusInWindow();
         loginPanel.add(ipLabel);
         loginPanel.add(UsernameField);
         mainPanel.add(loginPanel);
@@ -125,23 +143,87 @@ public class LoginWindow extends JFrame {
         public void actionPerformed(ActionEvent actionEvent) {
             ipAddress = IPField.getText();
             portNumber = Integer.parseInt(PortField.getText());
-            loadLoginScreen();
-        }
-    };
+            sock = null;
+            try {
+                sock = new Socket(ipAddress, portNumber);
+                dos = new DataOutputStream(sock.getOutputStream());
+                dis = new DataInputStream(sock.getInputStream());
+                loadLoginScreen();
+            } catch (IOException e) {
+                ErrorLabel.setText("Error: No server on this port!");
+                e.printStackTrace();
+            }
+
+
+        }};
 
     ActionListener loginListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            ErrorLabel.setText("Logged in");
-            dispose();
-            new MainChatWindow();
+            String username = UsernameField.getText();
+            char[] password = PasswordField.getPassword();
+            try {
+
+
+                String pass = String.valueOf(password);
+                dos.writeUTF(String.format("login#%s#%s", username, pass));
+
+                String reply = dis.readUTF();
+                if(reply.equals("OK"))
+                {
+                    ErrorLabel.setText("Logged in");
+                    dispose();
+                    new MainChatWindow(sock, dos, dis);
+                }else
+                {
+                    ErrorLabel.setText(reply);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     };
 
     ActionListener registerListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            ErrorLabel.setText("Registered");
+            String reply;
+            try {
+                String pass = String.valueOf(PasswordField.getPassword());
+                dos.writeUTF(String.format("register#%s#%s", UsernameField.getText(), pass));
+                if((reply = dis.readUTF()).equals("OK")){
+                    ErrorLabel.setText("Registered successfully,\nyou can now log in!");
+                }else if(reply.contains("Username already exists!"))
+                {
+                    ErrorLabel.setText("Username already exists!");
+                }else
+                {
+                    ErrorLabel.setText("And error occured during registration!");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
     };
+
+    private void disconnect()
+    {
+        if(sock != null)
+        {
+            try {
+
+                dos.writeUTF("disconnect");
+                String reply = dis.readUTF();
+                if(reply.equals("OK"))
+                {
+                    dis.close();
+                    dos.close();
+                    sock.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
