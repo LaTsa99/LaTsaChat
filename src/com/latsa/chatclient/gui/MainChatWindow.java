@@ -1,37 +1,48 @@
 package com.latsa.chatclient.gui;
 
 import com.latsa.chatclient.controller.MessageAcceptor;
+import org.apache.commons.logging.Log;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class MainChatWindow extends JFrame {
 
     private Socket sock;
     private DataOutputStream dos;
-    private DataInputStream dis;
+    private volatile DataInputStream dis;
     private Thread accepter;
     private MessageAcceptor ma;
+    private TreeMap<String, String> users;
+    private String SelectedUser;
+    private String state;
 
     private JTextField chatInput;
     private JTextArea chatScreen;
+    private JTable onlineUsers;
+    private JPopupMenu popup;
 
+    private boolean admin;
+    private boolean exit;
 
-    public MainChatWindow( Socket sock, DataOutputStream dos, DataInputStream dis)
+    public MainChatWindow( Socket sock, DataOutputStream dos, DataInputStream dis, boolean admin)
     {
         super("Chat Application");
 
         this.sock = sock;
         this.dos = dos;
         this.dis = dis;
+        this.admin = admin;
 
         initWindow();
         this.setVisible(true);
@@ -39,14 +50,19 @@ public class MainChatWindow extends JFrame {
         this.addWindowListener(new WindowAdapter() {
                                    @Override
                                    public void windowClosing(WindowEvent e) {
-                                       super.windowClosing(e);
-                                       disconnect();
+                                       exit = true;
+                                       try {
+                                           dos.writeUTF("disconnect");
+                                       } catch (IOException ex) {
+                                           ex.printStackTrace();
+                                       }
                                    }
                                });
         ma = new MessageAcceptor(this, dis);
         accepter = new Thread(ma);
         accepter.start();
-
+        users = new TreeMap<>();
+        exit = false;
     }
 
     private void initWindow()
@@ -56,18 +72,21 @@ public class MainChatWindow extends JFrame {
         JMenuBar menu = new JMenuBar();
         JMenu file = new JMenu("File");
         JMenuItem disconnect = new JMenuItem("Disconnect");
-        disconnect.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                disconnect();
-                dispose();
-                new LoginWindow();
+        disconnect.addActionListener(actionEvent -> {
+            exit = false;
+            try {
+                dos.writeUTF("disconnect");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
         file.add(disconnect);
+
+
+        JMenuItem userMenu = new JMenuItem("Show users");
+        userMenu.addActionListener(actionEvent -> showUsers());
+        file.add(userMenu);
         menu.add(file);
-        JMenu showUsers = new JMenu("Show users");
-        menu.add(showUsers);
         this.setJMenuBar(menu);
 
         JPanel chatPanel = new JPanel();
@@ -97,22 +116,18 @@ public class MainChatWindow extends JFrame {
         this.pack();
     }
 
-    private void disconnect()
+    public void disconnect()
     {
         if(sock != null)
         {
             try {
-
-                dos.writeUTF("disconnect");
                 ma.stop();
-                String reply = dis.readUTF();
-                if(reply.equals("OK"))
-                {
-                    ma.stop();
-                    dis.close();
-                    dos.close();
-                    sock.close();
-                }
+                dis.close();
+                dos.close();
+                sock.close();
+                dispose();
+                if(!exit)
+                    new LoginWindow();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -136,5 +151,103 @@ public class MainChatWindow extends JFrame {
 
     public void setText(String s){
         chatScreen.append(s + "\n");
+    }
+
+    public void addUser(String name, String isOnline)
+    {
+        if(users.containsKey(name)) {
+            if (!users.get(name).equals(isOnline))
+                users.replace(name, isOnline);
+        }else
+        {
+            users.put(name, isOnline);
+        }
+    }
+
+    private void showUsers()
+    {
+
+        JFrame tableFrame = new JFrame();
+        tableFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        DefaultTableModel model = new DefaultTableModel();
+        onlineUsers = new JTable(model);
+
+        model.addColumn("name");
+        model.addColumn("online");
+
+        Set<String> nameSet = users.keySet();
+        for(String s : nameSet)
+        {
+            model.addRow(new Object[]{s, users.get(s)});
+        }
+
+        if(admin)
+        {
+            popup = new JPopupMenu();
+            JMenuItem kickMenu = new JMenuItem("Kick user");
+            JMenuItem banMenu = new JMenuItem("Ban user");
+
+            kickMenu.addActionListener(new KickListener());
+            popup.add(kickMenu);
+            popup.add(banMenu);
+
+            onlineUsers.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    super.mousePressed(e);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    super.mouseReleased(e);
+                    if(e.isPopupTrigger()) {
+                        JTable source = (JTable) e.getSource();
+                        int row = source.rowAtPoint(e.getPoint());
+                        int column = source.columnAtPoint(e.getPoint());
+
+                        SelectedUser = (String)source.getValueAt(row, 0);
+                        state = (String)source.getValueAt(row, 1);
+
+                        if (!source.isRowSelected(row))
+                            source.changeSelection(row, column, false, false);
+
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+            });
+        }
+
+        JScrollPane scroller = new JScrollPane(onlineUsers);
+
+        tableFrame.add(scroller);
+        tableFrame.pack();
+        tableFrame.setVisible(true);
+    }
+
+    public void userKicked(String reply)
+    {
+        if (reply.equals("KICKED")) {
+            JOptionPane.showMessageDialog(MainChatWindow.this, "User successfully kicked!");
+        } else if (reply.equals("ADMIN")) {
+            JOptionPane.showMessageDialog(MainChatWindow.this, "You can't kick an admin!", "Warning", JOptionPane.WARNING_MESSAGE);
+        } else if (reply.equals("YOU")) {
+            JOptionPane.showMessageDialog(MainChatWindow.this, "Why would you want to kick yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
+        }
+    }
+
+    private class KickListener implements ActionListener
+    {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if(state.equals("Online")) {
+                try {
+                    dos.writeUTF(String.format("kick#%s", SelectedUser));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

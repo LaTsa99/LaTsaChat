@@ -25,8 +25,21 @@ public class MessageAcceptor implements Runnable {
         {
             try {
                 String msg = dis.readUTF();
-                System.out.println(msg);
-                window.setText(msg);
+                if(msg.contains("#"))
+                {
+                    String[] data = msg.split("#");
+                    if(data[0].equals("user"))
+                        window.addUser(data[1], data[2]);
+                    else if(data[0].equals("kick"))
+                        window.userKicked(data[1]);
+                    else
+                        window.setText(msg);
+                } else if(msg.equals("disconnect"))
+                {
+                    window.disconnect();
+                }
+                else
+                    window.setText(msg);
             } catch (IOException e) {
                 e.printStackTrace();
             }

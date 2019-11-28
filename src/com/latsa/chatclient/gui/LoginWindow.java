@@ -169,11 +169,15 @@ public class LoginWindow extends JFrame {
                 dos.writeUTF(String.format("login#%s#%s", username, pass));
 
                 String reply = dis.readUTF();
-                if(reply.equals("OK"))
+                if (reply.equals("OK")) {
+                    ErrorLabel.setText("Logged in");
+                    dispose();
+                    new MainChatWindow(sock, dos, dis, false);
+                } else if (reply.equals("OK_ADMIN"))
                 {
                     ErrorLabel.setText("Logged in");
                     dispose();
-                    new MainChatWindow(sock, dos, dis);
+                    new MainChatWindow(sock, dos, dis, true);
                 }else
                 {
                     ErrorLabel.setText(reply);
