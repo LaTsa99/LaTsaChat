@@ -32,6 +32,8 @@ public class MessageAcceptor implements Runnable {
                         window.addUser(data[1], data[2]);
                     else if(data[0].equals("kick"))
                         window.userKicked(data[1]);
+                    else if(data[0].equals("ban"))
+                        window.userBanned(data[1]);
                     else
                         window.setText(msg);
                 } else if(msg.equals("disconnect"))

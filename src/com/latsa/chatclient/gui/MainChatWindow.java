@@ -170,6 +170,7 @@ public class MainChatWindow extends JFrame {
 
         DefaultTableModel model = new DefaultTableModel();
         onlineUsers = new JTable(model);
+        onlineUsers.setEnabled(false);
 
         model.addColumn("name");
         model.addColumn("online");
@@ -187,6 +188,7 @@ public class MainChatWindow extends JFrame {
             JMenuItem banMenu = new JMenuItem("Ban user");
 
             kickMenu.addActionListener(new KickListener());
+            banMenu.addActionListener(new BanListener());
             popup.add(kickMenu);
             popup.add(banMenu);
 
@@ -225,14 +227,31 @@ public class MainChatWindow extends JFrame {
 
     public void userKicked(String reply)
     {
+        MainChatWindow main = MainChatWindow.this;
         if (reply.equals("KICKED")) {
-            JOptionPane.showMessageDialog(MainChatWindow.this, "User successfully kicked!");
+            JOptionPane.showMessageDialog(main, "User successfully kicked!");
         } else if (reply.equals("ADMIN")) {
-            JOptionPane.showMessageDialog(MainChatWindow.this, "You can't kick an admin!", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(main, "You can't kick an admin!", "Warning", JOptionPane.WARNING_MESSAGE);
         } else if (reply.equals("YOU")) {
-            JOptionPane.showMessageDialog(MainChatWindow.this, "Why would you want to kick yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showMessageDialog(main, "Why would you want to kick yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
         } else if (reply.equals("REKT")){
-            JOptionPane.showMessageDialog(MainChatWindow.this, "You have been kicked!", "Rekt", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(main, "You have been kicked!", "Rekt", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void userBanned(String reply)
+    {
+        MainChatWindow main = MainChatWindow.this;
+        if (reply.equals("BANNED")) {
+            JOptionPane.showMessageDialog(main, "User successfully banned!");
+        } else if (reply.equals("ADMIN")) {
+            JOptionPane.showMessageDialog(main, "You can't ban an admin!", "Warning", JOptionPane.WARNING_MESSAGE);
+        } else if (reply.equals("YOU")) {
+            JOptionPane.showMessageDialog(main, "Why would you want to ban yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
+        }else
+        {
+            JOptionPane.showMessageDialog(main, String.format("You have been banned for the following reason:\n%s", reply), "Error", JOptionPane.ERROR_MESSAGE);
+            dispose();
         }
     }
 
@@ -241,9 +260,31 @@ public class MainChatWindow extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            if(state.equals("Online")) {
+            int sure = JOptionPane.showConfirmDialog(MainChatWindow.this, "Are you sure?");
+            if(sure == 0) {
+                if (state.equals("Online")) {
+                    try {
+                        dos.writeUTF(String.format("kick#%s", SelectedUser));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }else
+                    JOptionPane.showMessageDialog(MainChatWindow.this, "User is offline.");
+            }
+        }
+    }
+
+    private class BanListener implements ActionListener
+    {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            String reason = JOptionPane.showInputDialog(MainChatWindow.this, "Why do you want to ban this user?");
+            int sure = JOptionPane.showConfirmDialog(MainChatWindow.this, "Are you sure?");
+            if(sure == 0)
+            {
                 try {
-                    dos.writeUTF(String.format("kick#%s", SelectedUser));
+                    dos.writeUTF(String.format("ban#%s#%s", SelectedUser, reason));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

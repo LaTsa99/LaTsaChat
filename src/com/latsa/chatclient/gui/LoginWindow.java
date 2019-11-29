@@ -166,7 +166,11 @@ public class LoginWindow extends JFrame {
                 {
                     dispose();
                     new MainChatWindow(sock, dos, dis, true);
-                }else
+                }else if(reply.equals("ban#REKT"))
+                {
+                    JOptionPane.showMessageDialog(LoginWindow.this, "You are banned from the server!", "Error", JOptionPane.ERROR_MESSAGE);
+                    dispose();
+                } else
                 {
                     JOptionPane.showMessageDialog(LoginWindow.this, "Wrong credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
                 }
