@@ -1,18 +1,15 @@
 package com.latsa.chatclient.gui;
 
 import com.latsa.chatclient.controller.MessageAcceptor;
-import org.apache.commons.logging.Log;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -151,6 +148,7 @@ public class MainChatWindow extends JFrame {
 
     public void setText(String s){
         chatScreen.append(s + "\n");
+        chatScreen.setCaretPosition(chatScreen.getDocument().getLength());
     }
 
     public void addUser(String name, String isOnline)

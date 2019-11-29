@@ -2,9 +2,9 @@ package com.latsa.chatclient.controller;
 
 import com.latsa.chatclient.gui.MainChatWindow;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
 
 public class MessageAcceptor implements Runnable {
 
@@ -41,7 +41,9 @@ public class MessageAcceptor implements Runnable {
                 else
                     window.setText(msg);
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(window, "Connection to server lost!", "Fatal", JOptionPane.ERROR_MESSAGE);
+                window.dispose();
+                stop = true;
             }
         }
     }

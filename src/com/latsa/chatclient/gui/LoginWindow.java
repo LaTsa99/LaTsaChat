@@ -19,7 +19,6 @@ public class LoginWindow extends JFrame {
     private JTextField PortField;
     private JTextField UsernameField;
     private JPasswordField PasswordField;
-    private JLabel ErrorLabel;
     private JButton ConnectButton;
     private JButton LoginButton;
     private JButton RegisterButton;
@@ -51,12 +50,11 @@ public class LoginWindow extends JFrame {
 
     private void initWindow()
     {
-        GridLayout gl = new GridLayout(4, 1);
+        GridLayout gl = new GridLayout(3, 1);
         mainPanel = new JPanel(gl);
 
         JPanel ipPanel = new JPanel();
         JPanel portPanel = new JPanel();
-        JPanel errorPanel = new JPanel();
         JPanel buttonPanel = new JPanel();
 
         JLabel ipLabel = new JLabel("Enter IP Address:");
@@ -78,13 +76,6 @@ public class LoginWindow extends JFrame {
         buttonPanel.add(ConnectButton);
         mainPanel.add(buttonPanel);
 
-        ErrorLabel = new JLabel("");
-        ErrorLabel.setForeground(new Color(255, 0, 0));
-        errorPanel.add(ErrorLabel);
-        mainPanel.add(errorPanel);
-
-
-
         this.add(mainPanel);
         this.pack();
     }
@@ -92,7 +83,7 @@ public class LoginWindow extends JFrame {
     private void loadLoginScreen()
     {
         mainPanel.removeAll();
-        mainPanel.setLayout(new GridLayout(5, 1));
+        mainPanel.setLayout(new GridLayout(4, 1));
 
         JPanel infoPanel = new JPanel();
         JPanel loginPanel = new JPanel();
@@ -127,11 +118,6 @@ public class LoginWindow extends JFrame {
         buttonPanel.add(RegisterButton);
         mainPanel.add(buttonPanel);
 
-        ErrorLabel = new JLabel("");
-        ErrorLabel.setForeground(new Color(255, 0, 0));
-        errorPanel.add(ErrorLabel);
-        mainPanel.add(errorPanel);
-
 
 
         this.add(mainPanel);
@@ -150,8 +136,10 @@ public class LoginWindow extends JFrame {
                 dis = new DataInputStream(sock.getInputStream());
                 loadLoginScreen();
             } catch (IOException e) {
-                ErrorLabel.setText("Error: No server on this port!");
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(LoginWindow.this, "No server on this port!", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(LoginWindow.this, "This isn't a port number!", "Error", JOptionPane.ERROR_MESSAGE);
+
             }
 
 
@@ -170,17 +158,15 @@ public class LoginWindow extends JFrame {
 
                 String reply = dis.readUTF();
                 if (reply.equals("OK")) {
-                    ErrorLabel.setText("Logged in");
                     dispose();
                     new MainChatWindow(sock, dos, dis, false);
                 } else if (reply.equals("OK_ADMIN"))
                 {
-                    ErrorLabel.setText("Logged in");
                     dispose();
                     new MainChatWindow(sock, dos, dis, true);
                 }else
                 {
-                    ErrorLabel.setText(reply);
+                    JOptionPane.showMessageDialog(LoginWindow.this, "Wrong credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -196,13 +182,13 @@ public class LoginWindow extends JFrame {
                 String pass = String.valueOf(PasswordField.getPassword());
                 dos.writeUTF(String.format("register#%s#%s", UsernameField.getText(), pass));
                 if((reply = dis.readUTF()).equals("OK")){
-                    ErrorLabel.setText("Registered successfully,\nyou can now log in!");
+                    JOptionPane.showMessageDialog(LoginWindow.this, "Registration successfull!");
                 }else if(reply.contains("Username already exists!"))
                 {
-                    ErrorLabel.setText("Username already exists!");
+                    JOptionPane.showMessageDialog(LoginWindow.this, "Username already exists!", "Error", JOptionPane.ERROR_MESSAGE);
                 }else
                 {
-                    ErrorLabel.setText("And error occured during registration!");
+                    JOptionPane.showMessageDialog(LoginWindow.this, "An error occured during registration!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
