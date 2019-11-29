@@ -136,10 +136,12 @@ public class LoginWindow extends JFrame {
                 dis = new DataInputStream(sock.getInputStream());
                 loadLoginScreen();
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "No server on this port!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(LoginWindow.this, "No server on this ip and port!", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (NumberFormatException nfe) {
                 JOptionPane.showMessageDialog(LoginWindow.this, "This isn't a port number!", "Error", JOptionPane.ERROR_MESSAGE);
-
+            } catch (IllegalArgumentException ie)
+            {
+                JOptionPane.showMessageDialog(LoginWindow.this, "Port out of range!", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
 
@@ -169,7 +171,8 @@ public class LoginWindow extends JFrame {
                     JOptionPane.showMessageDialog(LoginWindow.this, "Wrong credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                dispose();
             }
         }
     };
@@ -191,7 +194,8 @@ public class LoginWindow extends JFrame {
                     JOptionPane.showMessageDialog(LoginWindow.this, "An error occured during registration!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                dispose();
             }
 
         }
@@ -212,7 +216,8 @@ public class LoginWindow extends JFrame {
                     sock.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                dispose();
             }
         }
     }
