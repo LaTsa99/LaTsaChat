@@ -231,6 +231,8 @@ public class MainChatWindow extends JFrame {
             JOptionPane.showMessageDialog(MainChatWindow.this, "You can't kick an admin!", "Warning", JOptionPane.WARNING_MESSAGE);
         } else if (reply.equals("YOU")) {
             JOptionPane.showMessageDialog(MainChatWindow.this, "Why would you want to kick yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
+        } else if (reply.equals("REKT")){
+            JOptionPane.showMessageDialog(MainChatWindow.this, "You have been kicked!", "Rekt", JOptionPane.ERROR_MESSAGE);
         }
     }
 
