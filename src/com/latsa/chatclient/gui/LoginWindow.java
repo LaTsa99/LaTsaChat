@@ -132,9 +132,17 @@ public class LoginWindow extends JFrame {
             sock = null;
             try {
                 sock = new Socket(ipAddress, portNumber);
-                dos = new DataOutputStream(sock.getOutputStream());
                 dis = new DataInputStream(sock.getInputStream());
-                loadLoginScreen();
+
+                if(dis.readUTF().equals("REFUSED"))
+                {
+                    JOptionPane.showMessageDialog(LoginWindow.this, "Connection refused!", "Error", JOptionPane.ERROR_MESSAGE);
+                    dispose();
+                }else{
+                    dos = new DataOutputStream(sock.getOutputStream());
+                    loadLoginScreen();
+                }
+
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(LoginWindow.this, "No server on this ip and port!", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (NumberFormatException nfe) {
