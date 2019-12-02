@@ -99,7 +99,7 @@ public class MainChatWindow extends JFrame {
         chatPanel.add(chatScroll);
 
         JPanel inputPanel = new JPanel();
-        chatInput = new JTextField(80);
+        chatInput = new JTextField(90);
         chatInput.addActionListener(inputListener);
         inputPanel.add(chatInput);
 
@@ -150,6 +150,8 @@ public class MainChatWindow extends JFrame {
         chatScreen.append(s + "\n");
         chatScreen.setCaretPosition(chatScreen.getDocument().getLength());
     }
+
+
 
     public void addUser(String name, String isOnline)
     {
@@ -250,7 +252,7 @@ public class MainChatWindow extends JFrame {
             JOptionPane.showMessageDialog(main, "Why would you want to ban yourself???", "What?", JOptionPane.QUESTION_MESSAGE);
         }else
         {
-            JOptionPane.showMessageDialog(main, String.format("You have been banned for the following reason:\n%s", reply), "Error", JOptionPane.ERROR_MESSAGE);
+            error(String.format("You have been banned for the following reason:\n%s", reply));
             dispose();
         }
     }
@@ -290,5 +292,10 @@ public class MainChatWindow extends JFrame {
                 }
             }
         }
+    }
+
+    private void error(String issue)
+    {
+        JOptionPane.showMessageDialog(MainChatWindow.this, issue, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

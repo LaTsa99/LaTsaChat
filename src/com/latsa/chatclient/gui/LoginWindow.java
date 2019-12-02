@@ -136,7 +136,7 @@ public class LoginWindow extends JFrame {
 
                 if(dis.readUTF().equals("REFUSED"))
                 {
-                    JOptionPane.showMessageDialog(LoginWindow.this, "Connection refused!", "Error", JOptionPane.ERROR_MESSAGE);
+                    error("Connection refused!");
                     dispose();
                 }else{
                     dos = new DataOutputStream(sock.getOutputStream());
@@ -144,12 +144,12 @@ public class LoginWindow extends JFrame {
                 }
 
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "No server on this ip and port!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("No server on this ip and port!");
             } catch (NumberFormatException nfe) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "This isn't a port number!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("This isn't a port number!");
             } catch (IllegalArgumentException ie)
             {
-                JOptionPane.showMessageDialog(LoginWindow.this, "Port out of range!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("Port out of range!");
             }
 
 
@@ -176,14 +176,14 @@ public class LoginWindow extends JFrame {
                     new MainChatWindow(sock, dos, dis, true);
                 }else if(reply.equals("ban#REKT"))
                 {
-                    JOptionPane.showMessageDialog(LoginWindow.this, "You are banned from the server!", "Error", JOptionPane.ERROR_MESSAGE);
+                    error("You are banned from the server!");
                     dispose();
                 } else
                 {
-                    JOptionPane.showMessageDialog(LoginWindow.this, "Wrong credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
+                    error("Wrong credentials!");
                 }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("Connection with the server lost!");
                 dispose();
             }
         }
@@ -194,19 +194,23 @@ public class LoginWindow extends JFrame {
         public void actionPerformed(ActionEvent actionEvent) {
             String reply;
             try {
-                String pass = String.valueOf(PasswordField.getPassword());
-                dos.writeUTF(String.format("register#%s#%s", UsernameField.getText(), pass));
-                if((reply = dis.readUTF()).equals("OK")){
-                    JOptionPane.showMessageDialog(LoginWindow.this, "Registration successfull!");
-                }else if(reply.contains("Username already exists!"))
+                String username = UsernameField.getText();
+                if(username.contains("#") || username.contains("_"))
                 {
-                    JOptionPane.showMessageDialog(LoginWindow.this, "Username already exists!", "Error", JOptionPane.ERROR_MESSAGE);
-                }else
-                {
-                    JOptionPane.showMessageDialog(LoginWindow.this, "An error occured during registration!", "Error", JOptionPane.ERROR_MESSAGE);
+                    error("Username cannot contain '#' and '_' characters!");
+                }else {
+                    String pass = String.valueOf(PasswordField.getPassword());
+                    dos.writeUTF(String.format("register#%s#%s", username, pass));
+                    if ((reply = dis.readUTF()).equals("OK")) {
+                        JOptionPane.showMessageDialog(LoginWindow.this, "Registration successfull!");
+                    } else if (reply.contains("Username already exists!")) {
+                        error("Username already exists!");
+                    } else {
+                        error("An error occurred during registration!");
+                    }
                 }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("Connection with the server lost!");
                 dispose();
             }
 
@@ -228,9 +232,15 @@ public class LoginWindow extends JFrame {
                     sock.close();
                 }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(LoginWindow.this, "Connection with the server lost!", "Error", JOptionPane.ERROR_MESSAGE);
+                error("Connection with the server lost!");
                 dispose();
             }
         }
     }
+
+    private void error(String issue)
+    {
+        JOptionPane.showMessageDialog(LoginWindow.this, issue, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
 }
