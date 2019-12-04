@@ -13,6 +13,9 @@ import java.net.Socket;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * Main swing window of the client side application.
+ */
 public class MainChatWindow extends JFrame {
 
     private Socket sock;
@@ -32,6 +35,14 @@ public class MainChatWindow extends JFrame {
     private boolean admin;
     private boolean exit;
 
+    /**
+     * Creates a new chat window.
+     *
+     * @param sock The socket, which is connected to the server.
+     * @param dos The output stream channel to the server.
+     * @param dis The input stream channel from the server.
+     * @param admin Says, if the current client admin privileges has.
+     */
     public MainChatWindow( Socket sock, DataOutputStream dos, DataInputStream dis, boolean admin)
     {
         super("Chat Application");
@@ -62,6 +73,9 @@ public class MainChatWindow extends JFrame {
         exit = false;
     }
 
+    /**
+     * Initiates the chat window.
+     */
     private void initWindow()
     {
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -113,6 +127,9 @@ public class MainChatWindow extends JFrame {
         this.pack();
     }
 
+    /**
+     * Disconnects from the server.
+     */
     public void disconnect()
     {
         if(sock != null)
@@ -131,6 +148,10 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Checks, if there is text in the input field, and
+     * sends it to the server.
+     */
     private ActionListener inputListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -146,13 +167,24 @@ public class MainChatWindow extends JFrame {
         }
     };
 
+    /**
+     * Displays given text on the chat area.
+     *
+     * @param s text to display
+     */
     public void setText(String s){
         chatScreen.append(s + "\n");
         chatScreen.setCaretPosition(chatScreen.getDocument().getLength());
     }
 
 
-
+    /**
+     * Adds user to users status table, or updates their
+     * status.
+     *
+     * @param name name of the user
+     * @param isOnline current online status
+     */
     public void addUser(String name, String isOnline)
     {
         if(users.containsKey(name)) {
@@ -164,6 +196,11 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Creates a new window with a table in it, which contains
+     * the users of the server and their online status. If the client
+     * is admin, users can be kicked or banned here.
+     */
     private void showUsers()
     {
 
@@ -227,6 +264,14 @@ public class MainChatWindow extends JFrame {
         tableFrame.setVisible(true);
     }
 
+    /**
+     * Handles messages, that are connected to kicking process.
+     * If the reply equals to 'REKT', the client gets kicked from
+     * the server. Else, a popup window appears about the reply
+     * from the server.
+     *
+     * @param reply reply from the server
+     */
     public void userKicked(String reply)
     {
         MainChatWindow main = MainChatWindow.this;
@@ -241,6 +286,13 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Same as userKicked, but this is about ban. If client
+     * gets banned, a pop up window will appear displaying the
+     * reason of the ban.
+     *
+     * @param reply reply from the server
+     */
     public void userBanned(String reply)
     {
         MainChatWindow main = MainChatWindow.this;
@@ -257,6 +309,10 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Listens, if the client (who is an admin) wants to kick another
+     * user. If so, communicates with server.
+     */
     private class KickListener implements ActionListener
     {
 
@@ -276,6 +332,11 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Listens, if client (admin) wants to ban a client. If so, a pop up
+     * window appears, where the client can give the reason of ban. Then
+     * communicates with the server.
+     */
     private class BanListener implements ActionListener
     {
 
@@ -294,6 +355,11 @@ public class MainChatWindow extends JFrame {
         }
     }
 
+    /**
+     * Creates a pop up window with the given message.
+     *
+     * @param issue error message
+     */
     private void error(String issue)
     {
         JOptionPane.showMessageDialog(MainChatWindow.this, issue, "Error", JOptionPane.ERROR_MESSAGE);

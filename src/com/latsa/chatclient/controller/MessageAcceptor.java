@@ -6,12 +6,21 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * This class listens for messages from the server and processes them.
+ */
 public class MessageAcceptor implements Runnable {
 
     private MainChatWindow window;
     private DataInputStream dis;
     private boolean stop;
 
+    /**
+     * Creates a new acceptor.
+     *
+     * @param window the window, that created this acceptor
+     * @param dis input channel from the server
+     */
     public MessageAcceptor(MainChatWindow window, DataInputStream dis)
     {
         this.window = window;
@@ -19,6 +28,9 @@ public class MessageAcceptor implements Runnable {
         stop = false;
     }
 
+    /**
+     * Waits for messages from the server, then processes the commands.
+     */
     @Override
     public void run() {
         while(!stop)
@@ -50,6 +62,9 @@ public class MessageAcceptor implements Runnable {
         }
     }
 
+    /**
+     * Stops the run loop.
+     */
     public void stop()
     {
         stop = true;

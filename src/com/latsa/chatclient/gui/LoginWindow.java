@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.net.Socket;
 
 
+/**
+ * A swing window, which users can use, to connect to a server
+ * and then log in or register.
+ */
 public class LoginWindow extends JFrame {
 
     private JPanel mainPanel;
@@ -30,6 +34,10 @@ public class LoginWindow extends JFrame {
     private DataInputStream dis;
     private DataOutputStream dos;
 
+    /**
+     * Constructs a login window, with ip address and port
+     * number input.
+     */
     public LoginWindow()
     {
         super("Login");
@@ -48,6 +56,9 @@ public class LoginWindow extends JFrame {
         });
     }
 
+    /**
+     * Creates the default window (ip and port)
+     */
     private void initWindow()
     {
         GridLayout gl = new GridLayout(3, 1);
@@ -80,6 +91,10 @@ public class LoginWindow extends JFrame {
         this.pack();
     }
 
+    /**
+     * Loads the login interface with username and password
+     * input.
+     */
     private void loadLoginScreen()
     {
         mainPanel.removeAll();
@@ -124,7 +139,11 @@ public class LoginWindow extends JFrame {
         this.pack();
     }
 
-    ActionListener al = new ActionListener() {
+    /**
+     * This action listener checks, if ip address and port
+     * are valid, and then connects to the server.
+     */
+    private ActionListener al = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             ipAddress = IPField.getText();
@@ -155,7 +174,12 @@ public class LoginWindow extends JFrame {
 
         }};
 
-    ActionListener loginListener = new ActionListener() {
+    /**
+     * This action listener checks, if login credentials are valid and
+     * communicates with the server, if the user exists and credentials are
+     * good.
+     */
+    private ActionListener loginListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             String username = UsernameField.getText();
@@ -189,7 +213,11 @@ public class LoginWindow extends JFrame {
         }
     };
 
-    ActionListener registerListener = new ActionListener() {
+    /**
+     * Checks, if registration credentials are valid and communicates with
+     * server.
+     */
+    private ActionListener registerListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             String reply;
@@ -217,6 +245,9 @@ public class LoginWindow extends JFrame {
         }
     };
 
+    /**
+     * Disconnects from the server.
+     */
     private void disconnect()
     {
         if(sock != null)
@@ -238,6 +269,11 @@ public class LoginWindow extends JFrame {
         }
     }
 
+    /**
+     * Creates a pop up window, if an error occurs.
+     *
+     * @param issue cause of error
+     */
     private void error(String issue)
     {
         JOptionPane.showMessageDialog(LoginWindow.this, issue, "Error", JOptionPane.ERROR_MESSAGE);
